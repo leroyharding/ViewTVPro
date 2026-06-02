@@ -14,8 +14,26 @@ export function useDpadNavigation() {
       }
     }
 
+    // Find the topmost active overlay/modal container to isolate D-pad focus
+    const overlays = Array.from(
+      document.querySelectorAll<HTMLElement>('.video-container, [class*="z-[10000]"], [class*="z-[100]"], .z-50')
+    ).filter(el => {
+      const rect = el.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0;
+    });
+
+    let activeContainer: HTMLElement | Document = document;
+    if (overlays.length > 0) {
+      overlays.sort((a, b) => {
+        const zA = parseInt(window.getComputedStyle(a).zIndex) || 0;
+        const zB = parseInt(window.getComputedStyle(b).zIndex) || 0;
+        return zA - zB;
+      });
+      activeContainer = overlays[overlays.length - 1];
+    }
+
     const focusables = Array.from(
-      document.querySelectorAll<HTMLElement>('[tabindex]:not([tabindex="-1"]), button, a, input, select, textarea')
+      activeContainer.querySelectorAll<HTMLElement>('[tabindex]:not([tabindex="-1"]), button, a, input, select, textarea')
     ).filter(el => {
       const rect = el.getBoundingClientRect();
       return rect.width > 0 && rect.height > 0 && !el.hidden;
