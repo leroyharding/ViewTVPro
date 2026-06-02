@@ -1,7 +1,14 @@
 package com.example.leeviewtvpro
 
 import android.annotation.SuppressLint
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.view.KeyEvent
 import android.view.View
 import android.webkit.ValueCallback
@@ -10,6 +17,8 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
+import androidx.core.content.FileProvider
+import java.io.File
 
 class MainActivity : ComponentActivity() {
     private lateinit var webView: WebView
@@ -61,7 +70,7 @@ class MainActivity : ComponentActivity() {
         // Set WebView as the content view
         setContentView(webView)
 
-        // Register Javascript Interface for Android app control (Exit app confirmation dialog)
+        // Register Javascript Interface for Android app control (Exit app confirmation dialog & Updater)
         webView.addJavascriptInterface(object {
             @android.webkit.JavascriptInterface
             fun exitApp() {
@@ -69,10 +78,60 @@ class MainActivity : ComponentActivity() {
                     finish()
                 }
             }
+
+            @android.webkit.JavascriptInterface
+            fun downloadAndInstallApk(apkUrl: String) {
+                runOnUiThread {
+                    startApkDownload(apkUrl)
+                }
+            }
         }, "AndroidBridge")
         
         // Load the inlined React+Vite app from the android local assets
         webView.loadUrl("file:///android_asset/index.html")
+    }
+
+    // Download the updated APK using native DownloadManager
+    private fun startApkDownload(apkUrl: String) {
+        val destinationFile = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "ViewTVPro_Update.apk")
+        if (destinationFile.exists()) {
+            destinationFile.delete()
+        }
+
+        val request = DownloadManager.Request(Uri.parse(apkUrl))
+            .setTitle("Downloading ViewTVPro Update")
+            .setDescription("Preparing to install...")
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+            .setDestinationUri(Uri.fromFile(destinationFile))
+
+        val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val downloadId = dm.enqueue(request)
+
+        val onComplete = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                if (id == downloadId) {
+                    installApk(destinationFile)
+                    unregisterReceiver(this)
+                }
+            }
+        }
+        
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        }
+    }
+
+    // Launch package installer intent to install the APK
+    private fun installApk(file: File) {
+        val apkUri = FileProvider.getUriForFile(this, "com.example.leeviewtvpro.fileprovider", file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(apkUri, "application/vnd.android.package-archive")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        }
+        startActivity(intent)
     }
 
     // Capture remote key events (Back Button support)

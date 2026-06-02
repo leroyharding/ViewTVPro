@@ -42,6 +42,7 @@ const App: React.FC = () => {
   } | null>(null);
   const [history, setHistory] = useState<ViewState[]>([]);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<{ versionName: string; changelog: string; apkUrl: string } | null>(null);
   const { settings, updateSettings } = useSettings();
   const mainRef = useRef<HTMLDivElement>(null);
 
@@ -57,6 +58,19 @@ const App: React.FC = () => {
       }, 500);
       return () => clearTimeout(timer);
     }
+  }, []);
+
+  // Check for sideload updates on launch
+  useEffect(() => {
+    fetch('https://raw.githubusercontent.com/leroyharding/ViewTVPro/main/version.json')
+      .then(res => res.json())
+      .then(data => {
+        const CURRENT_VERSION_CODE = 201;
+        if (data.versionCode > CURRENT_VERSION_CODE) {
+          setUpdateInfo(data);
+        }
+      })
+      .catch(err => console.log('Failed to check for updates:', err));
   }, []);
 
   // Load trending content
@@ -167,6 +181,10 @@ const App: React.FC = () => {
   // Back button handler for Android bridge
   useEffect(() => {
     (window as unknown as Record<string, unknown>).handleAndroidBackPress = () => {
+      if (updateInfo) {
+        setUpdateInfo(null);
+        return true;
+      }
       if (showExitDialog) {
         setShowExitDialog(false);
         return true;
@@ -197,13 +215,15 @@ const App: React.FC = () => {
       setView('home');
       return true;
     };
-  }, [player, selectedItem, view, prevView, handleClosePlayer, handleBackFromStreams, handleCloseDetail, history, showExitDialog]);
+  }, [player, selectedItem, view, prevView, handleClosePlayer, handleBackFromStreams, handleCloseDetail, history, showExitDialog, updateInfo]);
 
   // Escape key handler
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (showExitDialog) {
+        if (updateInfo) {
+          setUpdateInfo(null);
+        } else if (showExitDialog) {
           setShowExitDialog(false);
         } else if (player) {
           handleClosePlayer();
@@ -227,7 +247,7 @@ const App: React.FC = () => {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [player, selectedItem, view, prevView, handleClosePlayer, handleBackFromStreams, handleCloseDetail, history, showExitDialog]);
+  }, [player, selectedItem, view, prevView, handleClosePlayer, handleBackFromStreams, handleCloseDetail, history, showExitDialog, updateInfo]);
 
   // Auto-focus management for exit confirmation dialog
   useEffect(() => {
@@ -244,6 +264,22 @@ const App: React.FC = () => {
       }, 100);
     }
   }, [showExitDialog]);
+
+  // Auto-focus management for update dialog
+  useEffect(() => {
+    if (updateInfo) {
+      setTimeout(() => {
+        const laterBtn = document.getElementById('btn-update-later');
+        if (laterBtn) laterBtn.focus();
+      }, 100);
+    } else {
+      setTimeout(() => {
+        if (lastFocusedRef.current && document.body.contains(lastFocusedRef.current)) {
+          lastFocusedRef.current.focus();
+        }
+      }, 100);
+    }
+  }, [updateInfo]);
 
   const rdKey = settings.rdManualKey || settings.rdToken || '';
 
@@ -376,6 +412,45 @@ const App: React.FC = () => {
                 className="px-6 py-3 bg-[#1e1e3f] hover:bg-[#2a2a57] text-white font-semibold rounded-xl border border-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-[#12122c] cursor-pointer"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sideload Update Prompt Dialog */}
+      {updateInfo && (
+        <div className="fixed inset-0 bg-[#0a0a1a]/90 backdrop-blur-md z-[10000] flex items-center justify-center p-4">
+          <div className="bg-[#12122c]/95 border border-orange-500/30 p-8 rounded-2xl max-w-md w-full text-center shadow-[0_0_50px_rgba(255,126,0,0.25)] animate-fade-in">
+            <h2 className="text-2xl font-bold text-white mb-2">Update Available!</h2>
+            <p className="text-orange-400 font-semibold mb-4 text-sm">Version {updateInfo.versionName} is ready.</p>
+            <div className="bg-white/5 p-4 rounded-xl mb-6 text-left max-h-32 overflow-y-auto border border-white/5">
+              <p className="text-xs text-white/40 mb-1 font-semibold">What's New:</p>
+              <p className="text-xs text-white/80 whitespace-pre-line leading-relaxed">{updateInfo.changelog}</p>
+            </div>
+            <div className="flex gap-4 justify-center">
+              <button
+                id="btn-update-now"
+                tabIndex={0}
+                onClick={() => {
+                  const bridge = (window as any).AndroidBridge;
+                  if (bridge && typeof bridge.downloadAndInstallApk === 'function') {
+                    bridge.downloadAndInstallApk(updateInfo.apkUrl);
+                  } else {
+                    alert("Native update is only supported on Android TV / Firestick.");
+                  }
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-[#12122c] cursor-pointer"
+              >
+                Update Now
+              </button>
+              <button
+                id="btn-update-later"
+                tabIndex={0}
+                onClick={() => setUpdateInfo(null)}
+                className="px-6 py-3 bg-[#1e1e3f] hover:bg-[#2a2a57] text-white font-semibold rounded-xl border border-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-[#12122c] cursor-pointer"
+              >
+                Later
               </button>
             </div>
           </div>

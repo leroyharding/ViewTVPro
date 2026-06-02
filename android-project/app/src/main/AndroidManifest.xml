@@ -4,6 +4,8 @@
     <!-- Add Internet and Network State permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <!-- Declare Leanback Android TV support (touchscreen not required) -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -19,6 +21,17 @@
         android:theme="@style/Theme.LeeViewTVPro"
         android:hardwareAccelerated="true"
         android:usesCleartextTraffic="true">
+        
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.leeviewtvpro.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
