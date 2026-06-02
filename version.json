@@ -1,0 +1,6 @@
+{
+  "versionCode": 201,
+  "versionName": "2.0.1",
+  "changelog": "- Initial self-updater release\n- Integrated Firestick/Android TV update dialog\n- Performance enhancements and file lock resolution",
+  "apkUrl": "https://github.com/leroyharding/ViewTVPro/raw/main/ViewTVPro.apk"
+}
