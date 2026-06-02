@@ -1,0 +1,43 @@
+{
+  "feature_name": "Hydra Collections",
+  "tech_stack": {
+    "core": "React (Vite)",
+    "styling": "Tailwind CSS v4",
+    "icons": "Lucide-React",
+    "routing": "React-Router-DOM v6",
+    "api": "TMDB API"
+  },
+  "implementation_prompt": "Role: Senior Frontend Engineer & UI/UX Expert. Objective: Implement a high-fidelity 'Collections' library that fetches curated movie/TV franchises and themed bundles using the TMDB API. The design must be premium, cinematic, and use a dark 'Glassmorphism' aesthetic. REQUIREMENTS: 1. Data Logic: Create a helper utility that defines a HydraCollection interface (id, title, emoji, type). Support four types of TMDB fetches: tmdb_collection (Official box sets), discover_movie (Custom queries), discover_tv (Themed TV bundles), person_movies (Director filmographies). 2. UI Architecture: Collections Grid (responsive 1-3 cols) of card buttons with emojis. Detail View (grid of movie posters). Styling: zinc-900/40 backgrounds, zinc-800 borders, red-600 accents. 3. Routing: Use React-Router-DOM. /collections for list, /collections/:collectionId for deep-linking. Include Back button. 4. Integration: Use import.meta.env.VITE_TMDB_API_KEY. UI Aesthetic: Dark theme, high contrast, bold black italic typography, uppercase tracking-widest subheaders.",
+  "curated_data": [
+    { "id": "mcu", "title": "Marvel Cinematic Universe", "emoji": "🦸", "type": "discover_movie", "discoverParams": "&with_keywords=180547&sort_by=release_date.asc" },
+    { "id": "dc", "title": "DC Universe Films", "emoji": "🦇", "type": "discover_movie", "discoverParams": "&with_keywords=349&sort_by=release_date.asc" },
+    { "id": "star-wars", "title": "Star Wars Saga", "emoji": "⚔️", "type": "tmdb_collection", "tmdbCollectionId": 10 },
+    { "id": "james-bond", "title": "James Bond 007", "emoji": "🔫", "type": "tmdb_collection", "tmdbCollectionId": 645 },
+    { "id": "harry-potter", "title": "Harry Potter", "emoji": "🧙", "type": "tmdb_collection", "tmdbCollectionId": 1241 },
+    { "id": "lord-of-rings", "title": "Lord of the Rings", "emoji": "💍", "type": "tmdb_collection", "tmdbCollectionId": 119 },
+    { "id": "hobbit", "title": "The Hobbit Trilogy", "emoji": "🧝", "type": "tmdb_collection", "tmdbCollectionId": 121938 },
+    { "id": "fast-furious", "title": "Fast & Furious", "emoji": "🚗", "type": "tmdb_collection", "tmdbCollectionId": 9485 },
+    { "id": "mission-impossible", "title": "Mission: Impossible", "emoji": "💣", "type": "tmdb_collection", "tmdbCollectionId": 87359 },
+    { "id": "john-wick", "title": "John Wick", "emoji": "🐶", "type": "tmdb_collection", "tmdbCollectionId": 404609 },
+    { "id": "matrix", "title": "The Matrix", "emoji": "🕶️", "type": "tmdb_collection", "tmdbCollectionId": 2344 },
+    { "id": "jurassic-park", "title": "Jurassic Park", "emoji": "🦕", "type": "tmdb_collection", "tmdbCollectionId": 328 },
+    { "id": "pirates-caribbean", "title": "Pirates of the Caribbean", "emoji": "🏴‍☠️", "type": "tmdb_collection", "tmdbCollectionId": 295 },
+    { "id": "indiana-jones", "title": "Indiana Jones", "emoji": "🎩", "type": "tmdb_collection", "tmdbCollectionId": 84 },
+    { "id": "back-to-future", "title": "Back to the Future", "emoji": "⚡", "type": "tmdb_collection", "tmdbCollectionId": 264 },
+    { "id": "terminator", "title": "Terminator", "emoji": "🤖", "type": "tmdb_collection", "tmdbCollectionId": 534 },
+    { "id": "alien", "title": "Alien / Aliens", "emoji": "👾", "type": "tmdb_collection", "tmdbCollectionId": 8091 },
+    { "id": "predator", "title": "Predator", "emoji": "🌿", "type": "tmdb_collection", "tmdbCollectionId": 399 },
+    { "id": "rocky", "title": "Rocky & Creed", "emoji": "🥊", "type": "tmdb_collection", "tmdbCollectionId": 1575 },
+    { "id": "nolan", "title": "Christopher Nolan Films", "emoji": "🎞️", "type": "person_movies", "personId": 525 },
+    { "id": "tarantino", "title": "Quentin Tarantino Films", "emoji": "🩸", "type": "person_movies", "personId": 138 },
+    { "id": "scorsese", "title": "Martin Scorsese Films", "emoji": "🎬", "type": "person_movies", "personId": 1032 },
+    { "id": "oscar-winners", "title": "Oscar Best Picture Winners", "emoji": "🏆", "type": "discover_movie", "discoverParams": "&with_keywords=10704&sort_by=vote_average.desc&vote_count.gte=500" },
+    { "id": "top-tv", "title": "Highest Rated TV Shows", "emoji": "📺", "type": "discover_tv", "discoverParams": "&sort_by=vote_average.desc&vote_count.gte=1000" }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "updated_at": "2026-04-09",
+    "project": "
+    "
+  }
+}
